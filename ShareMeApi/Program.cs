@@ -5,13 +5,21 @@ using ShareMeApi.IServices;
 using ShareMeApi.Services;
 using ShareMeApi.Models;
 using Microsoft.AspNetCore.Authorization;
+using NLog.Web;
 
 var builder = WebApplication.CreateBuilder(args);
 
-string MyCor = "MyCor";
+#region 配置NLog
+
+builder.Logging.ClearProviders().SetMinimumLevel(LogLevel.Trace);
+builder.Host.UseNLog();
+//指定NLog配置文件，默认使用根目录的nlog.config文件（全小写）
+NLogBuilder.ConfigureNLog("Conf/NLog.config");
+
+#endregion
 
 #region IOC服务注入
-// Add services to the container.
+
 builder.Services.AddControllers();
 //读取Jwt配置文件到容器内
 builder.Services.Configure<JwtTokenConfigModel>(builder.Configuration.GetSection("JwtTokenConfig"));
@@ -113,6 +121,7 @@ builder.Services.AddAuthorization(option =>
 
 #region 支持跨域
 
+string MyCor = "MyCor";
 builder.Services.AddCors(option =>
 {
     option.AddPolicy(MyCor, builder =>
@@ -122,15 +131,18 @@ builder.Services.AddCors(option =>
 });
 
 #endregion
+
 //中间管道
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+//if (app.Environment.IsDevelopment())
+//{
+//    app.UseSwagger();
+//    app.UseSwaggerUI();
+//}
+app.UseSwagger();
+app.UseSwaggerUI();
 //https重定向
 app.UseHttpsRedirection();
 

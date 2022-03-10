@@ -12,9 +12,11 @@ namespace ShareMeApi.Controllers
     [Route("[controller]/[action]")]
     public class AccountController : ControllerBase
     {
+        private readonly ILogger<AccountController> _logger;
         private readonly IJwtGetToken _jwtGetToken;
-        public AccountController(IJwtGetToken jwtGetToken)
+        public AccountController(IJwtGetToken jwtGetToken,ILogger<AccountController> logger)
         {
+            _logger = logger;
             _jwtGetToken = jwtGetToken;
         }
         [HttpPost]
@@ -69,6 +71,7 @@ namespace ShareMeApi.Controllers
         [BaseModelResultFilter]
         public BaseResponseModel GetPublicDataByParam(string name)
         {
+            _logger.LogInformation("进入GetPublicDataByParam");
             BaseResponseModel result = new BaseResponseModel()
             {
                 StatusCode = 200,
