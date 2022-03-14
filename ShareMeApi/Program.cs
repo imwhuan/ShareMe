@@ -1,13 +1,21 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Microsoft.EntityFrameworkCore;
 using ShareMeApi.IServices;
 using ShareMeApi.Services;
 using ShareMeApi.Models;
 using Microsoft.AspNetCore.Authorization;
 using NLog.Web;
+using ShareMeApi.DBContext;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddDbContext<ShareMeDBContext>(option =>
+{
+    option.UseMySql(builder.Configuration.GetConnectionString("LocalMySql"), new MySqlServerVersion(new Version(8, 0, 28)));
+});
+
 
 #region 配置NLog
 
