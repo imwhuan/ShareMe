@@ -1,5 +1,8 @@
 ﻿namespace ShareMeApi.Models
 {
+    /// <summary>
+    /// Jwt配置信息
+    /// </summary>
     public class JwtTokenConfigModel
     {
         /// <summary>

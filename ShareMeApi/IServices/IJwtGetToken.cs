@@ -1,5 +1,8 @@
 ﻿namespace ShareMeApi.IServices
 {
+    /// <summary>
+    /// Jwt获取Token
+    /// </summary>
     public interface IJwtGetToken
     {
         /// <summary>

@@ -8,20 +8,43 @@ using ShareMeApi.Models;
 using Microsoft.AspNetCore.Authorization;
 using NLog.Web;
 using ShareMeApi.DBContext;
-using Microsoft.Extensions.Options;
-using Microsoft.Extensions.FileProviders;
+using MySqlConnector;
 
 var builder = WebApplication.CreateBuilder(args);
 
+#region 使用MySqlConnectionStringBuilder从机密管理器中拼接连接字符串并配置到EFCore上下文中
+
+MySqlConnectionStringBuilder MySqlConStrBuilder = new MySqlConnectionStringBuilder(builder.Configuration.GetConnectionString("XuNiMySql"));
+MySqlConStrBuilder.Password = builder.Configuration["XuNiMySqlPwd"];
 builder.Services.AddDbContext<ShareMeDBContext>(option =>
 {
-    option.UseMySql(builder.Configuration.GetConnectionString("XuNiMySql"), new MySqlServerVersion(new Version(8, 0, 28)));
+    option.UseMySql(MySqlConStrBuilder.ConnectionString, new MySqlServerVersion(new Version(8, 0, 28)));
+    //option.LogTo(msg =>
+    //{
+    //    Console.WriteLine("我的me：" + msg);
+    //}, LogLevel.Information);
 });
 
+#endregion
+
+#region 使用SqlConnectionStringBuilder从机密管理器中拼接连接字符串并配置到EFCore上下文中
+
+//SqlConnectionStringBuilder SqlConStrBuilder = new SqlConnectionStringBuilder(builder.Configuration.GetConnectionString("LocalMsSql"));
+//SqlConStrBuilder.Password = builder.Configuration["LocalMsSqlPwd"];
+//builder.Services.AddDbContext<ShareMeDBContext>(option =>
+//{
+//    option.UseSqlServer(SqlConStrBuilder.ConnectionString);
+//    //option.LogTo(msg =>
+//    //{
+//    //    Console.WriteLine("我的me：" + msg);
+//    //}, LogLevel.Information);
+//});
+
+#endregion
 
 #region 配置NLog
 
-builder.Logging.ClearProviders().SetMinimumLevel(LogLevel.Trace);
+builder.Logging.ClearProviders().SetMinimumLevel(LogLevel.Information);
 builder.Host.UseNLog();
 //指定NLog配置文件，默认使用根目录的nlog.config文件（全小写）
 NLogBuilder.ConfigureNLog("Conf/NLog.config");
