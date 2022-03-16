@@ -8,12 +8,14 @@ using ShareMeApi.Models;
 using Microsoft.AspNetCore.Authorization;
 using NLog.Web;
 using ShareMeApi.DBContext;
+using Microsoft.Extensions.Options;
+using Microsoft.Extensions.FileProviders;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<ShareMeDBContext>(option =>
 {
-    option.UseMySql(builder.Configuration.GetConnectionString("LocalMySql"), new MySqlServerVersion(new Version(8, 0, 28)));
+    option.UseMySql(builder.Configuration.GetConnectionString("XuNiMySql"), new MySqlServerVersion(new Version(8, 0, 28)));
 });
 
 
@@ -31,6 +33,7 @@ NLogBuilder.ConfigureNLog("Conf/NLog.config");
 builder.Services.AddControllers();
 //读取Jwt配置文件到容器内
 builder.Services.Configure<JwtTokenConfigModel>(builder.Configuration.GetSection("JwtTokenConfig"));
+builder.Services.Configure<AuthorInfoModel>(builder.Configuration.GetSection("AuthorInfoModel"));
 //注册自定义的获取jwt Token的方法到容器服务
 builder.Services.AddSingleton<IJwtGetToken, JwtGetToken>();
 builder.Services.AddSingleton<IAuthorizationHandler, FaileResultHandler>();
@@ -40,7 +43,27 @@ builder.Services.AddSingleton<HttpClientHelper>();
 #region 添加Swagger/OpenAPI服务，展示接口信息用的
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+AuthorInfoModel authorInfo = new AuthorInfoModel();
+builder.Configuration.GetSection("AuthorInfoModel").Bind(authorInfo);
+builder.Services.AddSwaggerGen(option =>
+{
+    option.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
+    {
+        Version = "v0.1.0",
+        Title = authorInfo.ProTitle,
+        Description = authorInfo.ProDesc,
+        TermsOfService = new Uri(authorInfo.HostUrl?? "http://124.221.159.80"),
+        Contact = new Microsoft.OpenApi.Models.OpenApiContact()
+        {
+            Email = authorInfo.Email,
+            Name = authorInfo.Name,
+            Url = new Uri(authorInfo.GitHub?? "https://github.com/imwhuan")
+        }
+    }); ;
+    string basePath=Microsoft.DotNet.PlatformAbstractions.ApplicationEnvironment.ApplicationBasePath;
+    string xmlPath = Path.Combine(basePath, "ShareMeApi.xml");
+    option.IncludeXmlComments(xmlPath);
+});
 #endregion
 
 #region 配置Jwt身份验证
@@ -149,10 +172,16 @@ var app = builder.Build();
 //    app.UseSwagger();
 //    app.UseSwaggerUI();
 //}
+//app.UseStaticFiles(new StaticFileOptions
+//{
+//    FileProvider = new PhysicalFileProvider(
+//           Path.Combine(builder.Environment.ContentRootPath, "swagger")),
+//    RequestPath = "/swagger"
+//});
 app.UseSwagger();
 app.UseSwaggerUI();
 //https重定向
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 
 app.UseCors(MyCor);
 //身份验证中间件
@@ -162,11 +191,17 @@ app.UseAuthorization();
 //配置路由
 app.MapGet("/", context =>
 {
-    context.Response.ContentType = "text/plain;charset=utf-8";
-    string res= "欢迎使用ShareMe！~~O(∩_∩)O~~ 🚀  \r\n系统接口详情请参阅swagger文档：" + context.Request.Host.Value + "/swagger";
+    context.Response.ContentType = "text/html;charset=utf-8";
+    string res = $"欢迎使用ShareMe！~~O(∩_∩)O~~ 🚀  <br />系统接口详情请参阅：<a style='color:skyblue;text-decoration: none;' href=' {context.Request.Scheme}://{context.Request.Headers.Host}/swagger/index.html'>swagger文档</a> 🐇<br />";
     return context.Response.WriteAsync(res,Encoding.UTF8);
 });
 app.MapControllers();
+//app.MapGet("/{*id}", context =>
+//{
+//    context.Response.ContentType = "text/plain;charset=utf-8";
+//    string res = "糟糕！你所请求的地址不存在哦！"+context.Request.Path.Value;
+//    return context.Response.WriteAsync(res, Encoding.UTF8);
+//});
 
 //启动服务（程序起点）
 app.Run();

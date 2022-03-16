@@ -9,6 +9,9 @@ using ShareMeApi.Models.DBModel;
 
 namespace ShareMeApi.Controllers
 {
+    /// <summary>
+    /// 身份相关控制器
+    /// </summary>
     [ApiController]
     [CatchExceptionFilter]
     [Route("[controller]/[action]")]
@@ -17,12 +20,23 @@ namespace ShareMeApi.Controllers
         private readonly ILogger<AccountController> _logger;
         private readonly IJwtGetToken _jwtGetToken;
         private readonly ShareMeDBContext _dBContext;
+        /// <summary>
+        /// 构造函数
+        /// </summary>
+        /// <param name="jwtGetToken"></param>
+        /// <param name="logger"></param>
+        /// <param name="dBContext"></param>
         public AccountController(IJwtGetToken jwtGetToken,ILogger<AccountController> logger,ShareMeDBContext dBContext)
         {
             _logger = logger;
             _jwtGetToken = jwtGetToken;
             _dBContext = dBContext;
         }
+        /// <summary>
+        /// 登录方法
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
         [HttpPost]
         public ActionResult<BaseResponseModel> Login([Bind("Name", "Password")] LoginModel model)
         {
@@ -106,6 +120,10 @@ namespace ShareMeApi.Controllers
             }
             return Unauthorized(res);
         }
+        /// <summary>
+        /// 获取需要身份认证的数据
+        /// </summary>
+        /// <returns></returns>
         [Authorize(Policy = "DiyAuthroization")]
         [HttpGet]
         public BaseResponseModel GetSecretData()
@@ -118,6 +136,10 @@ namespace ShareMeApi.Controllers
             };
             return result;
         }
+        /// <summary>
+        /// 获取公开的数据
+        /// </summary>
+        /// <returns></returns>
         [HttpGet]
         public BaseResponseModel GetPublicData()
         {
@@ -129,6 +151,10 @@ namespace ShareMeApi.Controllers
             };
             return result;
         }
+        /// <summary>
+        /// 需要参数的公开测试方法
+        /// </summary>
+        /// <returns></returns>
         [HttpGet]
         [BaseModelResultFilter]
         public BaseResponseModel GetPublicDataByParam(string name)
@@ -142,12 +168,20 @@ namespace ShareMeApi.Controllers
             };
             return result;
         }
+        /// <summary>
+        /// 返回字符串的公开测试方法
+        /// </summary>
+        /// <returns></returns>
         [HttpGet]
         [BaseModelResultFilter]
         public string GetStr()
         {
             return "啊";
         }
+        /// <summary>
+        /// 返回JsonResult的公开测试方法
+        /// </summary>
+        /// <returns></returns>
         [HttpGet]
         [BaseModelResultFilter]
         public JsonResult GetStrV()
