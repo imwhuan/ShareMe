@@ -14,7 +14,7 @@ namespace ShareMeApi.Controllers
     /// </summary>
     [ApiController]
     [CatchExceptionFilter]
-    [Route("[controller]/[action]")]
+    [Route("api/[controller]/[action]")]
     public class AccountController : ControllerBase
     {
         private readonly ILogger<AccountController> _logger;

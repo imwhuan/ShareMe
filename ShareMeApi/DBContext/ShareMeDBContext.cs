@@ -27,6 +27,10 @@ namespace ShareMeApi.DBContext
         /// </summary>
         public DbSet<UserInfo> UserInfos  { get; set; }
         /// <summary>
+        /// 系统设置表
+        /// </summary>
+        public DbSet<SysSetting> SysSettings { get; set; }
+        /// <summary>
         /// 
         /// </summary>
         /// <param name="modelBuilder"></param>
@@ -35,6 +39,7 @@ namespace ShareMeApi.DBContext
             modelBuilder.Entity<UserInfo>().Property(u=>u.CreateDate).ValueGeneratedOnAdd().HasValueGenerator(typeof(CreateTimeGenerator));
             modelBuilder.Entity<PostItNote>().Property(p=>p.CreateDate).ValueGeneratedOnAdd().HasValueGenerator(typeof(CreateTimeGenerator));
             modelBuilder.Entity<PostItNote>().Property(p => p.ModifyDate).ValueGeneratedOnAddOrUpdate().HasValueGenerator(typeof(CreateTimeGenerator));
+            modelBuilder.Entity<SysSetting>().HasKey(s => new { s.SysName, s.SysKey });
             base.OnModelCreating(modelBuilder);
         }
         /// <summary>
